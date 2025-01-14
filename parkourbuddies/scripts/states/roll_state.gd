@@ -11,7 +11,6 @@ func _ready() -> void:
 
 func enter() -> void:
 	set_physics_process(true)
-	object.sprite.play('run')
 
 func _physics_process(_delta: float) -> void:
 	object.sprite.play("roll")

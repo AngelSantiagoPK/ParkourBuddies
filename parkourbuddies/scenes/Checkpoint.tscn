@@ -1,0 +1,26 @@
+[gd_scene load_steps=4 format=3 uid="uid://c11rf2nmyp4j2"]
+
+[ext_resource type="Script" path="res://scripts/checkpoint.gd" id="1_7fjdp"]
+[ext_resource type="Texture2D" uid="uid://dg5k1swphaope" path="res://assets/ParkourSprites.png" id="1_fyrfs"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hvrim"]
+size = Vector2(26, 26)
+
+[node name="Checkpoint" type="Node2D"]
+script = ExtResource("1_7fjdp")
+
+[node name="Area2D" type="Area2D" parent="."]
+z_index = 1
+collision_layer = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("RectangleShape2D_hvrim")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+modulate = Color(0, 1, 0, 1)
+texture = ExtResource("1_fyrfs")
+region_enabled = true
+region_rect = Rect2(39.2106, 8.64846, 24.8851, 26.988)
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

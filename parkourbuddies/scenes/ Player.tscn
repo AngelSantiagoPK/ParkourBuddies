@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://ck8dqqgtbt23g"]
+[gd_scene load_steps=17 format=3 uid="uid://ck8dqqgtbt23g"]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_2rrrr"]
 [ext_resource type="SpriteFrames" uid="uid://jv1g7gepl7sm" path="res://resources/player_sprites.tres" id="1_kx4ti"]
@@ -7,7 +7,13 @@
 [ext_resource type="Script" path="res://scripts/states/jump_state.gd" id="6_1ke0d"]
 [ext_resource type="Script" path="res://scripts/states/drop_state.gd" id="6_itsbb"]
 [ext_resource type="Script" path="res://scripts/states/run_state.gd" id="7_kb1nr"]
+[ext_resource type="Script" path="res://scripts/states/hang_state.gd" id="7_quxik"]
 [ext_resource type="Script" path="res://scripts/states/roll_state.gd" id="8_2y0l6"]
+[ext_resource type="Script" path="res://scripts/states/hang_clumbup_state.gd" id="8_rckaf"]
+[ext_resource type="Script" path="res://scripts/states/crouch_state.gd" id="9_164f0"]
+[ext_resource type="Script" path="res://scripts/states/wallrun_state.gd" id="9_s2rky"]
+[ext_resource type="Script" path="res://scripts/states/landing_state.gd" id="10_8b32o"]
+[ext_resource type="Script" path="res://scripts/states/slide_state.gd" id="11_asfd2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_uxea3"]
 size = Vector2(13, 27)
@@ -17,20 +23,40 @@ radius = 8.0
 height = 26.0
 
 [node name="Player" type="CharacterBody2D"]
-modulate = Color(0.286275, 1, 0, 1)
 script = ExtResource("1_2rrrr")
-move_acceleration = 20.0
-move_speed = 500.0
-move_friction = 50.0
+gravity = 60.0
+terminal_velocity = 900.0
+move_acceleration = 0.5
+move_speed = 400.0
+move_friction = 100.0
+jump_force = 400.0
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 unique_name_in_owner = true
+z_index = 1
 position = Vector2(0, -27)
+scale = Vector2(2, 2)
 sprite_frames = ExtResource("1_kx4ti")
-animation = &"pull_up"
+animation = &"idle"
 autoplay = "idle"
 
+[node name="LedgeRays" type="Node2D" parent="AnimatedSprite2D"]
+
+[node name="LedgeRayRight" type="RayCast2D" parent="AnimatedSprite2D"]
+unique_name_in_owner = true
+position = Vector2(1, -2)
+enabled = false
+target_position = Vector2(8, 0)
+collide_with_areas = true
+
+[node name="LedgeRayDown" type="RayCast2D" parent="AnimatedSprite2D"]
+unique_name_in_owner = true
+position = Vector2(9, -11)
+target_position = Vector2(0, 12.5)
+collide_with_areas = true
+
 [node name="BodyCollision" type="CollisionShape2D" parent="."]
+unique_name_in_owner = true
 position = Vector2(0.5, -36.5)
 shape = SubResource("RectangleShape2D_uxea3")
 
@@ -40,8 +66,7 @@ shape = SubResource("CapsuleShape2D_bgc7c")
 
 [node name="JumpTimer" type="Timer" parent="."]
 unique_name_in_owner = true
-wait_time = 0.05
-one_shot = true
+wait_time = 0.3
 
 [node name="CoyoteTimer" type="Timer" parent="."]
 unique_name_in_owner = true
@@ -49,9 +74,16 @@ wait_time = 0.1
 one_shot = true
 
 [node name="Rays" type="Node2D" parent="."]
-
-[node name="JumpRay" type="RayCast2D" parent="Rays"]
 unique_name_in_owner = true
+
+[node name="JumpRay1" type="RayCast2D" parent="Rays"]
+unique_name_in_owner = true
+position = Vector2(-6, 0)
+target_position = Vector2(0, 10)
+
+[node name="JumpRay2" type="RayCast2D" parent="Rays"]
+unique_name_in_owner = true
+position = Vector2(9, 0)
 target_position = Vector2(0, 10)
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("object", "state")]
@@ -72,6 +104,22 @@ object = NodePath("../..")
 script = ExtResource("6_itsbb")
 object = NodePath("../..")
 
+[node name="Hang" type="Node" parent="StateMachine" node_paths=PackedStringArray("object")]
+script = ExtResource("7_quxik")
+object = NodePath("../..")
+grab_delay = 0.1
+
+[node name="Climbup" type="Node" parent="StateMachine" node_paths=PackedStringArray("object")]
+script = ExtResource("8_rckaf")
+object = NodePath("../..")
+vertical_offset = 20.0
+climbup_time = 0.1
+
+[node name="Wallrun" type="Node" parent="StateMachine" node_paths=PackedStringArray("object")]
+script = ExtResource("9_s2rky")
+object = NodePath("../..")
+wallrun_gravity = 60.0
+
 [node name="Run" type="Node" parent="StateMachine" node_paths=PackedStringArray("object")]
 script = ExtResource("7_kb1nr")
 object = NodePath("../..")
@@ -80,7 +128,20 @@ object = NodePath("../..")
 script = ExtResource("8_2y0l6")
 object = NodePath("../..")
 
+[node name="Crouch" type="Node" parent="StateMachine" node_paths=PackedStringArray("object")]
+script = ExtResource("9_164f0")
+object = NodePath("../..")
+
+[node name="Landing" type="Node" parent="StateMachine" node_paths=PackedStringArray("object")]
+script = ExtResource("10_8b32o")
+object = NodePath("../..")
+
+[node name="Slide" type="Node" parent="StateMachine" node_paths=PackedStringArray("object")]
+script = ExtResource("11_asfd2")
+object = NodePath("../..")
+
 [node name="TestingLabels" type="Node2D" parent="."]
+visible = false
 
 [node name="StateLabel" type="Label" parent="TestingLabels"]
 unique_name_in_owner = true

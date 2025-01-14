@@ -6,9 +6,11 @@ signal jump
 signal slide
 signal stop
 signal drop
+signal wallrun
 
 # Variables
 @export var object: Player
+var slide_threshold: float = 50.0
 
 # Functions
 func _ready() -> void:
@@ -18,30 +20,30 @@ func enter() -> void:
 	set_physics_process(true)
 	object.sprite.play('run')
 
-func check_input() -> void:
+func _physics_process(_delta: float) -> void:
+	if not Input.is_anything_pressed():
+		stop.emit()
+		return
+
 	if Input.is_action_pressed("left"):
 		object.acclerate(Vector2.LEFT)
-		object.sprite.scale.x = -1
+		object.move_direction = Vector2.LEFT
 
 	if Input.is_action_pressed("right"):
 		object.acclerate(Vector2.RIGHT)
-		object.sprite.scale.x = 1
+		object.move_direction = Vector2.RIGHT
 	
-	if Input.is_action_just_pressed("up"):
+	if Input.is_action_pressed("up"):
 		jump.emit()
+		return
 
-	if Input.is_action_pressed("down"):
+	if Input.is_action_pressed("down") and abs(object.velocity.x) > slide_threshold:
 		slide.emit()
-
-	if not Input.is_anything_pressed():
-		stop.emit()
-
-func _physics_process(_delta: float) -> void:
-	if not object.grounded:
-		object.coyote_timer.start()
+		return
 	
-	check_input()
-	object.sprite.play("run")
+	if not object.grounded:
+		drop.emit()
+
 
 func exit() -> void:
 	set_physics_process(false)
